@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_unity_widget/flutter_unity_widget.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Unity 통합',
+      home: UnityViewPage(),
+    );
+  }
+}
+
+class UnityViewPage extends StatefulWidget {
+  @override
+  _UnityViewPageState createState() => _UnityViewPageState();
+}
+
+class _UnityViewPageState extends State<UnityViewPage> {
+  late UnityWidgetController _unityWidgetController;
+  TextEditingController _heightController = TextEditingController();
+  TextEditingController _radiusController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Unity 통합'),
+      ),
+      body: Stack(
+        children: <Widget>[
+          Expanded(
+            child: UnityWidget(
+              onUnityCreated: onUnityCreated,
+            ),
+          ),
+          Positioned(
+            right: 60.0, // 오른쪽에서 8dp 떨어진 곳에 위치
+            bottom: 10.0, // 하단에서 8dp 떨어진 곳에 위치
+            child: Container(
+              width: screenWidth / 8, // 화면 너비의 1/8로 설정
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: _heightController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      labelText: '높이',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _radiusController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      labelText: '반지름',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    child: Text('Send to Unity'),
+                    onPressed: () {
+                      sendHeightAndRadiusToUnity(
+                          _heightController.text, _radiusController.text);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void onUnityCreated(UnityWidgetController controller) {
+    _unityWidgetController = controller;
+  }
+
+  void sendHeightAndRadiusToUnity(String heightText, String radiusText) {
+    final height = heightText;
+    final radius = radiusText;
+    debugPrint('Sending height: $height');
+    debugPrint('Sending radius: $radius');
+    // 'height'와 'radius'를 포함한 메시지를 Unity로 보냅니다.
+    _unityWidgetController.postMessage(
+      'GrCanvas', // Replace with your actual GameObject name in Unity
+      'SetHeightAndRadius', // Replace with your actual method name in Unity
+      '$height|$radius', // '|'를 구분자로 사용하여 height와 radius 값을 전달합니다
+    );
+  }
+}

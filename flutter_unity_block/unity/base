@@ -1,0 +1,78 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+
+public class Base_2 : MonoBehaviour
+{
+    // Start is called before the first frame update
+    public HingeJoint topHinge;     // Arm2 - 감소
+    public HingeJoint bottomHinge;  // Arm1 - 증가
+
+    public Boolean rotate = false;
+
+    private float min = 0.965f;
+    private float max = 1.13f;
+
+    public float move_top = 0.00f;
+
+    public float ud_top;
+    public float ud_bottom;
+
+    public float init_top;
+    public float init_bottom;
+
+    private float speed = 25f;
+
+    void Start()
+    {
+        init_top = topHinge.anchor.y;
+        init_bottom = bottomHinge.anchor.y;
+
+        ud_top = init_top;
+        ud_bottom = init_bottom;
+    }
+
+    void Update()
+    {
+        if (rotate)
+        {
+            if ((max > move_top) && (move_top > init_top))
+            {
+                if (ud_top >= move_top) { init_top = move_top; rotate = false; }
+                DecreaseValue();
+            }
+
+            else if ((min < move_top) && (move_top < init_top))
+            {
+                if (ud_top <= move_top) { init_top = move_top; rotate = false; }
+                IncreaseValue();
+            }
+
+
+        }
+    }
+
+    void IncreaseValue()
+    {
+        ud_top -= speed * Time.deltaTime;
+        ud_bottom += speed * Time.deltaTime;
+
+        Move();
+    }
+
+    void DecreaseValue()
+    {
+        ud_top += speed * Time.deltaTime;
+        ud_bottom -= speed * Time.deltaTime;
+
+        Move();
+    }
+
+    private void Move()
+    {
+        topHinge.anchor = new Vector3(topHinge.anchor.x, ud_top, topHinge.anchor.z);
+        bottomHinge.anchor = new Vector3(bottomHinge.anchor.x, ud_bottom, bottomHinge.anchor.z);
+    }
+}

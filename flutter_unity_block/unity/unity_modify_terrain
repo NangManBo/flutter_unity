@@ -1,0 +1,107 @@
+using FlutterUnityIntegration;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Move_Terrain : MonoBehaviour
+{
+    public Terrain terrain;
+    public Text coordText;
+    public float modificationFactor = 2.0f;
+    private float[,] initialHeights; // 초기 높이맵 데이터를 저장할 배열
+    private Vector3 lastClickWorldPos = Vector3.zero; // 마지막 클릭한 위치를 저장할 변수
+
+    // Flutter로부터 받은 높이와 반지름 값을 저장할 변수
+    float heightModification; 
+    float radius;
+
+    private void Start()
+    {
+        // 게임 시작 시에 초기 높이맵 데이터를 저장합니다.
+        TerrainData terrainData = terrain.terrainData;
+        initialHeights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+    }
+
+    public void ResetTerrain()
+    {
+        // 초기 높이맵 데이터를 Terrain에 적용하여 초기화합니다.
+        TerrainData terrainData = terrain.terrainData;
+        terrainData.SetHeights(0, 0, initialHeights);
+    }
+
+    private void Update()
+    {
+        // 마우스 클릭 또는 터치 이벤트를 감지합니다.
+        if (Input.GetMouseButtonDown(0))
+        {
+            HandleTerrainClick();
+        }
+    }
+
+    public void SetHeightAndRadius(string message)
+    {
+        string[] parts = message.Split('|');
+        heightModification = float.Parse(parts[0]);
+        radius = float.Parse(parts[1]);
+
+        // 여기에 height와 radius 값을 사용하는 로직을 구현합니다.
+        if (lastClickWorldPos != Vector3.zero) {
+            ModifyTerrainCone(lastClickWorldPos, heightModification, radius);
+        }
+    }
+
+    private void HandleTerrainClick()
+    {
+        // 마우스 위치에 해당하는 월드 포지션을 찾습니다.
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit) && hit.collider is TerrainCollider)
+        {
+            lastClickWorldPos = hit.point;
+            coordText.text = $"X: {lastClickWorldPos.x}, Z: {lastClickWorldPos.z}";
+        }
+    }
+
+    public void ModifyTerrainCone(Vector3 worldPos, float heightModification, float radius)
+    {
+        // 좌표를 Terrain의 높이로 변환
+        TerrainData terrainData = terrain.terrainData;
+        float normalizedX = Mathf.InverseLerp(terrain.transform.position.x, terrain.transform.position.x + terrainData.size.x, worldPos.x);
+        float normalizedZ = Mathf.InverseLerp(terrain.transform.position.z, terrain.transform.position.z + terrainData.size.z, worldPos.z);
+        int terrainX = (int)(normalizedX * terrainData.heightmapResolution);
+        int terrainZ = (int)(normalizedZ * terrainData.heightmapResolution);
+
+        // 현재 높이맵 데이터를 가져옴
+        float[,] heights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+
+        for (int x = 0; x < terrainData.heightmapResolution; x++)
+        {
+            for (int z = 0; z < terrainData.heightmapResolution; z++)
+            {
+                float distance = Mathf.Sqrt((x - terrainX) * (x - terrainX) + (z - terrainZ) * (z - terrainZ));
+                if (distance <= radius)
+                {
+                    float h = Mathf.Abs(heightModification) * (1 - (distance / radius));
+                    if (heightModification < 0)
+                    {
+                        heights[z, x] -= h; // 음수 높이 입력이면 내려감
+                    }
+                    else
+                    {
+                        heights[z, x] += h; // 양수 높이 입력이면 올라감
+                    }
+                }
+            }
+        }
+        // 변경된 높이맵을 적용
+        terrainData.SetHeights(0, 0, heights);
+    }
+
+    private void OnApplicationQuit()
+    {
+        // 실행 종료 시에 초기 높이맵 데이터로 Reset합니다.
+        ResetTerrain();
+    }
+}

@@ -1,0 +1,69 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+public class Fore_2 : MonoBehaviour
+{
+    public HingeJoint topHinge;     // Arm2 - 감소
+    public HingeJoint bottomHinge;  // Arm1 - 증가
+
+    public Boolean rotate = false;
+
+    private float min = -2.29f;
+    private float max = -0.845f;
+
+    public float move_top = 0.00f;
+
+    public float ud_bottom;
+
+    public float init_bottom;
+
+    private float speed = 1f;
+
+    void Start()
+    {
+        init_bottom = bottomHinge.anchor.y;
+
+        ud_bottom = init_bottom;
+    }
+
+    void Update()
+    {
+        if (rotate)
+        {
+            if ((max > move_top) && (move_top > init_bottom))
+            {
+                if (ud_bottom >= move_top) { init_bottom = move_top; rotate = false; }
+                IncreaseValue();
+            }
+
+            else if ((min <= move_top) && (move_top < init_bottom))
+            {
+                if (ud_bottom <= move_top) { init_bottom = move_top; rotate = false; }
+                DecreaseValue();
+            }
+            
+        }
+    }
+
+    void IncreaseValue()
+    {
+        ud_bottom += speed * Time.deltaTime;
+
+        Move();
+    }
+
+    void DecreaseValue()
+    {
+        ud_bottom -= speed * Time.deltaTime;
+
+        Move();
+    }
+
+    private void Move()
+    {
+        bottomHinge.anchor = new Vector3(bottomHinge.anchor.x, ud_bottom, bottomHinge.anchor.z);
+    }
+}

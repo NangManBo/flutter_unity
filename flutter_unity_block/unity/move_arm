@@ -1,0 +1,101 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEditor;
+
+public class Move_Button2 : MonoBehaviour
+{
+    public GameObject ARM_1_1;
+    public GameObject ARM_1_2;
+    public GameObject ARM_2;
+    public GameObject ARM_3;
+
+    public InputField AR1_Input;
+    public InputField AR2_Input;
+    public InputField AR3_Input;
+
+    public Button Move;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    public float AR1 = 0.00f;
+    public float AR2 = 0.00f;
+    public float AR3 = 0.00f;
+
+    public void MoveButtonClick()
+    {
+        AR1 = float.Parse(AR1_Input.text);
+        AR2 = float.Parse(AR2_Input.text);
+        AR3 = float.Parse(AR3_Input.text);
+
+        // AR1
+        if (AR1 <= 12 && AR1 >= 0)
+        {
+            AR1 = 0.97f + 0.03f * AR1 / 12;
+            ARM_1_1.GetComponent<Base_2>().move_top = AR1;
+            ARM_1_1.GetComponent<Base_2>().rotate = true;
+        }
+
+        if (AR1 <= 12 && AR1 >= 0)
+        {
+            AR1 = 0.97f + 0.03f * AR1 / 12;
+            ARM_1_2.GetComponent<Base_2>().move_top = AR1;
+            ARM_1_2.GetComponent<Base_2>().rotate = true;
+        }
+
+        if (AR1 <= 45 && AR1 > 12)
+        {
+            AR1 = 1f + 0.1f * (AR1 - 12) / 33;
+            ARM_1_1.GetComponent<Base_2>().move_top = AR1;
+            ARM_1_1.GetComponent<Base_2>().rotate = true;
+        }
+
+        if (AR1 <= 45 && AR1 > 12)
+        {
+            AR1 = 1f + 0.1f * (AR1-12) / 33;
+            ARM_1_2.GetComponent<Base_2>().move_top = AR1;
+            ARM_1_2.GetComponent<Base_2>().rotate = true;
+        }
+        //
+
+
+        // AR2
+        if (AR2 <= 90  && AR2 >= 0)
+        {
+            AR2 = (1f + 1.25f * AR2 / 90) * -1;
+            ARM_2.GetComponent<Fore_2>().move_top = AR2;
+            ARM_2.GetComponent<Fore_2>().rotate = true;
+        }
+        //
+
+        //AR3
+        if (AR3 <= 68 && AR3 > 0)
+        {
+            AR3 = 0.8f + 0.2f * AR3 / 68;
+            ARM_3.GetComponent<Bucket_2>().move_top = AR3;
+            ARM_3.GetComponent<Bucket_2>().rotate = true;
+        }
+
+        if (AR3 <= 90 && AR3 > 68)
+        {
+            AR3 = 1f + 0.02f * (AR3-68) / 22;
+            ARM_3.GetComponent<Bucket_2>().move_top = AR3;
+            ARM_3.GetComponent<Bucket_2>().rotate = true;
+        }
+        //
+
+
+    }
+}
